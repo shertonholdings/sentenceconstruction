@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentence Construction</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+        }
+        h1 {
+            color: #333;
+        }
+        .logo {
+            width: 100px;
+            margin-top: 20px;
+        }
+        .instructions {
+            margin: 20px;
+            font-size: 18px;
+            color: #555;
+        }
+        .scrambled-sentence {
+            font-size: 28px;
+            color: red;
+            font-weight: bold;
+            margin: 20px;
+        }
+        .selected-sentence {
+            font-size: 24px;
+            margin: 20px;
+            color: #007bff;
+        }
+        .word-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .word {
+            margin: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            display: inline-block;
+            padding: 10px;
+            border: 2px solid #333;
+            border-radius: 5px;
+            background-color: #e7f3fe;
+        }
+        .feedback {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .more-lessons-btn {
+            margin-top: 80px; /* Adjusted to maintain position */
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            font-size: 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .more-lessons-btn:hover {
+            background-color: #218838;
+        }
+        .selected-word {
+            background-color: #cce5ff; /* Highlight selected words */
+        }
+    </style>
+</head>
+<body>
+
+<!-- Logo -->
+<img src="https://i.imgur.com/mwpTHJj.png" class="logo" alt="Logo">
+
+<h1>Sentence Construction</h1>
+
+<!-- Instructions -->
+<div class="instructions">
+    Click on the words below to rearrange them and form a correct sentence!
+</div>
+
+<!-- Display the scrambled sentence -->
+<div class="scrambled-sentence" id="scrambledSentence"></div>
+
+<!-- Display the sentence being formed -->
+<div class="selected-sentence" id="selectedSentence"></div>
+
+<!-- Word options -->
+<div class="word-container" id="wordOptions"></div>
+
+<!-- Check button -->
+<button id="checkButton" style="display:none; padding: 10px 20px; font-size: 18px; margin-top: 20px;">Check Sentence</button>
+
+<!-- Feedback message -->
+<div class="feedback" id="feedbackMessage"></div>
+
+<!-- "More Lessons" button -->
+<a href="https://sites.google.com/view/grades-1/home" class="more-lessons-btn">More Lessons</a>
+
+<!-- JavaScript -->
+<script>
+    const feedbackMessage = document.getElementById('feedbackMessage');
+    const scrambledSentence = document.getElementById('scrambledSentence');
+    const selectedSentence = document.getElementById('selectedSentence');
+    const wordOptions = document.getElementById('wordOptions');
+    const checkButton = document.getElementById('checkButton');
+
+    // List of sentences with 3 or 4 words (lowercase)
+    const sentences = [
+        { scrambled: ["the", "cat", "sits"], correct: ["The", "cat", "sits"] },
+        { scrambled: ["the", "dog", "happy", "is"], correct: ["The", "dog", "is", "happy"] },
+        { scrambled: ["ice", "cream", "she", "likes"], correct: ["She", "likes", "ice", "cream"] },
+        { scrambled: ["they", "outside", "play"], correct: ["They", "play", "outside"] },
+        { scrambled: ["the", "sun", "shines"], correct: ["The", "sun", "shines"] },
+        { scrambled: ["i", "run", "can"], correct: ["I", "can", "run"] },
+        { scrambled: ["my", "is", "friend", "he"], correct: ["He", "is", "my", "friend"] }
+    ];
+
+    let currentSentence = null;
+    let userOrder = [];
+    let firstWordSelected = false; // Track if the first word has been selected
+
+    // Function to setup a new scrambled sentence
+    function setupGame() {
+        // Clear previous feedback
+        feedbackMessage.innerText = '';
+        selectedSentence.innerText = '';
+        userOrder = []; // Reset userOrder for new sentence
+        firstWordSelected = false; // Reset first word selection
+
+        // Select a random sentence
+        currentSentence = sentences[Math.floor(Math.random() * sentences.length)];
+        scrambledSentence.innerText = currentSentence.scrambled.join(' ');
+
+        // Display word options
+        wordOptions.innerHTML = '';
+        currentSentence.scrambled.forEach(word => {
+            const wordElement = document.createElement('div');
+            wordElement.classList.add('word');
+            wordElement.innerText = word;
+            wordElement.onclick = () => selectWord(word, wordElement);
+            wordOptions.appendChild(wordElement);
+        });
+
+        checkButton.style.display = 'none'; // Hide the check button initially
+    }
+
+    // Function to select a word
+    function selectWord(word, element) {
+        if (!userOrder.includes(word)) {
+            if (!firstWordSelected) {
+                userOrder.push(word.charAt(0).toUpperCase() + word.slice(1)); // Capitalize the first letter
+                firstWordSelected = true; // Mark that the first word has been selected
+            } else {
+                userOrder.push(word.toLowerCase()); // Keep subsequent words in lowercase
+            }
+            element.classList.add('selected-word'); // Highlight the selected word
+            updateSelectedSentence();
+            checkButton.style.display = 'block'; // Show the check button
+        }
+    }
+
+    // Update the displayed sentence being formed
+    function updateSelectedSentence() {
+        selectedSentence.innerText = userOrder.join(' ');
+    }
+
+    // Check if the user's order is correct
+    checkButton.onclick = function() {
+        // Check if the user's order matches the correct one
+        const userSentence = userOrder.join(' '); // Create user sentence
+        const correctSentence = currentSentence.correct.join(' '); // Create correct sentence
+
+        if (userSentence === correctSentence) {
+            feedbackMessage.innerText = "Congratulations! Great job!";
+            feedbackMessage.style.color = "green";
+            setTimeout(setupGame, 2000); // Automatically go to the next sentence after a delay
+        } else {
+            feedbackMessage.innerText = "Oh Sorry, Try Again!";
+            feedbackMessage.style.color = "red";
+            resetGame(); // Clear the selected words for another attempt
+        }
+    };
+
+    // Reset the game for another attempt
+    function resetGame() {
+        userOrder = [];
+        const words = document.querySelectorAll('.word');
+        words.forEach(word => word.classList.remove('selected-word')); // Remove highlighting
+        selectedSentence.innerText = ''; // Clear the selected sentence
+        checkButton.style.display = 'none'; // Hide the check button
+        firstWordSelected = false; // Reset first word selection
+    }
+
+    // Start the game
+    setupGame();
+</script>
+
+</body>
+</html>
